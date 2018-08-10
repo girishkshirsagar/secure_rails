@@ -51,9 +51,8 @@ Everyone writing code must be responsible for security. :lock:
 - Rails protects you from CSRF(Cross Site Request Forgery) by adding an authenticity tokens on forms. You won't be able to submit to a POST action if you don't have the token. This is enforced by protect_from_forgery with: :exception that's added to application_controller.rb by default.
 Do not skip this on your actions even for AJAX actions. When you use either rails-ujs or jquery_ujs, authenticity tokens will be added automatically.
 
-- On some pages like the login page, you'll want to throttle your users to a few requests per minute. This prevents bots from trying thousands of passwords quickly.
-Rack Attack is a Rack middleware that provides throttling among other features.
-  ```ruby
+- On some pages like the login page, you'll want to throttle your users to a few requests per minute. This prevents bots from trying thousands of passwords quickly. Rack Attack is a Rack middleware that provides throttling among other features.
+```ruby
 Rack::Attack.throttle('logins/email', :limit => 6, :period => 60.seconds) do |req|
   req.params['email'] if req.path == '/login' && req.post?
 end
