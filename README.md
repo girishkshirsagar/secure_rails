@@ -46,7 +46,26 @@ Everyone writing code must be responsible for security. :lock:
 
 - Encrypt cookies even if an SSL connection is used. This way, an attacker will not be able to view or modify cookies even if they are intercepted, and the user will not be able to read and edit cookies in the browser
 
-- Notify users of password changes, notify users of email address changes - send an email to both the old and new address
+- Notify users of password changes, notify users of email address changes - send an email to both the old and new address. Set appropriate expiry date for reset password tokens.
+
+- Rails protects you from CSRF(Cross Site Request Forgery) by adding an authenticity tokens on forms. You won't be able to submit to a POST action if you don't have the token. This is enforced by protect_from_forgery with: :exception that's added to application_controller.rb by default.
+Do not skip this on your actions even for AJAX actions. When you use either rails-ujs or jquery_ujs, authenticity tokens will be added automatically.
+
+- On some pages like the login page, you'll want to throttle your users to a few requests per minute. This prevents bots from trying thousands of passwords quickly.
+Rack Attack is a Rack middleware that provides throttling among other features.
+  ```ruby
+Rack::Attack.throttle('logins/email', :limit => 6, :period => 60.seconds) do |req|
+  req.params['email'] if req.path == '/login' && req.post?
+end
+```
+
+- The secret key base, database credentials, and other sensitive data should not be committed to your repository. By default, config/secrets.yml reads the secret key base from an environment variable in production. It is thus safe to commit secrets.yml to your repository.
+If your database.yml contains your database credentials, it shouldn't be committed to your repository.
+Rails 5.1 released a way to encrypt secrets. If you're using this feature you can commit the encrypted secrets file.
+
+- Some apps provide an admin panel to superusers to manage data. Consider putting this on a different domain like admin.example.com. If the admin panel is separate from the main app, you can apply more restrictions like IP based filtering or require only connections through your VPN.
+
+- On your server, create a non-root user and use that to run your application. In case the app is compromised, the attacker won't be able to do as much damage as when he has root access.
 
 - Protect sensitive data at rest with a library like [attr_encrypted](https://github.com/attr-encrypted/attr_encrypted) and possibly [KMS Encrypted](https://github.com/ankane/kms_encrypted). Further if necessary, keep rotating the keys/hash/salts used for encryption, keep track of latest encryption algorithms and their implementation libraries 
 
